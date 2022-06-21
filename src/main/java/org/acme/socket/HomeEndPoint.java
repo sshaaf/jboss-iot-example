@@ -1,7 +1,8 @@
 package org.acme.socket;
 
+import com.google.gson.Gson;
 import org.acme.home.Home;
-import org.acme.home.HomeFactory;
+import org.acme.sender.HomeFactory;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -10,6 +11,12 @@ import java.util.Set;
 import java.util.logging.Logger;
 
 import javax.annotation.PostConstruct;
+import javax.ejb.ActivationConfigProperty;
+import javax.ejb.MessageDriven;
+import javax.jms.JMSException;
+import javax.jms.Message;
+import javax.jms.MessageListener;
+import javax.jms.TextMessage;
 import javax.websocket.EncodeException;
 import javax.websocket.OnClose;
 import javax.websocket.OnError;
@@ -17,37 +24,18 @@ import javax.websocket.OnOpen;
 import javax.websocket.Session;
 import javax.websocket.server.ServerEndpoint;
 
-
+@MessageDriven(name = "HomeEndPointMDB", activationConfig = {
+        @ActivationConfigProperty(propertyName = "destinationLookup", propertyValue = "topic/DeviceTopic"),
+        @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Topic"),
+        @ActivationConfigProperty(propertyName = "acknowledgeMode", propertyValue = "Auto-acknowledge")})
 @ServerEndpoint(value = "/devicesocket", encoders = { HomeEncoder.class }, decoders = { MessageDecoder.class })
-public class HomeEndPoint {
+public class HomeEndPoint implements MessageListener {
 
     private static Set<Session> clients = Collections.synchronizedSet(new HashSet<>());
 
     private Logger logger = Logger.getLogger(getClass().getName());
 
     private Runnable intervalNotifier;
-
-    // It starts a Thread that notifies all sessions each second
-    @PostConstruct
-    public void startIntervalNotifier() {
-        logger.info("Starting Home Device interval notifier");
-        intervalNotifier = new Runnable() {
-
-            @Override
-            public void run() {
-                try {
-                    while (true) {
-                        Thread.sleep(1000);
-                        notifyAllSessions(HomeFactory.getLatestData());
-                    }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-        };
-        new Thread(intervalNotifier).start();
-    }
-
 
     // store the session once that it's opened
     @OnOpen
@@ -72,13 +60,31 @@ public class HomeEndPoint {
     }
 
     // This method sends the same Home object to all opened sessions
-    private void notifyAllSessions(Set<Home> homes) throws EncodeException, IOException {
+    private void notifyAllSessions(String h) throws EncodeException, IOException {
         for (Session s : clients) {
-            for(Home h: homes) {
                 s.getBasicRemote().sendObject(h);
-            }
         }
 
     }
 
+    @Override
+    public void onMessage(Message rcvMessage) {
+        TextMessage msg = null;
+        try {
+            if (rcvMessage instanceof TextMessage) {
+                msg = (TextMessage) rcvMessage;
+                logger.info("Received Message from topic at HomeEndPoint: " + msg.getText());
+                notifyAllSessions(msg.getText());
+                logger.info("Sent Message from topic at HomeEndPoint to socket: " + msg.getText());
+            } else {
+                logger.warning("Message of wrong type: " + rcvMessage.getClass().getName());
+            }
+        } catch (JMSException e) {
+            throw new RuntimeException(e);
+        } catch (EncodeException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 }

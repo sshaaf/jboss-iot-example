@@ -1,20 +1,25 @@
 package org.acme.home;
 
+import com.google.gson.Gson;
 import org.acme.device.Device;
+import org.acme.device.features.Feature;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicInteger;
 
-public class Home {
-    private UUID uuid = null;
+public class Home implements Serializable {
+    private static final long serialVersionUID = 1L;
+    private final int id;
     private String home = null;
     List<Device> devices = new ArrayList<>();
 
-
+    private static final AtomicInteger counter = new AtomicInteger();
 
     private Home(){
-        uuid = UUID.randomUUID();
+        id = counter.getAndIncrement();
     }
 
     public Home(String home){
@@ -33,6 +38,10 @@ public class Home {
         }
         else
             throw new IllegalArgumentException("No devices for this home"+home);
+    }
+
+    public int getId(){
+        return id;
     }
 
     public List<Device> getDevices(){
@@ -57,4 +66,12 @@ public class Home {
         return home;
     }
 
+    public String getJson() {
+        for(Device d: this.getDevices()){
+            for(Feature f: d.getFeatures()){
+                f.setValue();
+            }
+        }
+        return new Gson().toJson(this);
+    }
 }

@@ -7,7 +7,7 @@ import javax.websocket.EncodeException;
 import javax.websocket.EndpointConfig;
 import javax.websocket.Encoder.Text;
 
-public class HomeEncoder implements Text<Home> {
+public class HomeEncoder implements Text<String> {
 
 
     @Override
@@ -16,18 +16,13 @@ public class HomeEncoder implements Text<Home> {
     }
 
     @Override
-    public String encode(Home home) throws EncodeException {
-        System.out.println("Encoding hom:"+home.getHome());
-        return new Gson().toJson(home);
+    public String encode(String s) throws EncodeException {
+        return s;
     }
 
     @Override
     public void destroy() {
 
-    }
-
-    private static String JBuilder(Home home) throws Exception{
-        return new Gson().toJson(home);
     }
 
 }

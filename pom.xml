@@ -14,8 +14,8 @@
         <version>37</version>
     </parent>
     <properties>
-        <maven.compiler.source>17</maven.compiler.source>
-        <maven.compiler.target>17</maven.compiler.target>
+        <maven.compiler.source>11</maven.compiler.source>
+        <maven.compiler.target>11</maven.compiler.target>
         <!-- Protocol to use for communication with remote maven repositories.
                      You can set to 'http' if you are using a maven proxy and 'https'
                      interferes with that. Use 'https' for builds that will be released
@@ -127,8 +127,25 @@
             <scope>provided</scope>
         </dependency>
 
-        <!-- First declare the APIs we depend on and need for compilation. All
-            of them are provided by JBoss EAP -->
+        <!-- Add JMS capabilities will need full profile for MDBs -->
+        <dependency>
+            <groupId>org.jboss.spec.javax.jms</groupId>
+            <artifactId>jboss-jms-api_2.0_spec</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- Import the Servlet API, we use provided scope as the API is
+            included in JBoss EAP -->
+        <dependency>
+            <groupId>org.jboss.spec.javax.servlet</groupId>
+            <artifactId>jboss-servlet-api_4.0_spec</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.spec.javax.annotation</groupId>
+            <artifactId>jboss-annotations-api_1.3_spec</artifactId>
+            <scope>provided</scope>
+        </dependency>
 
         <!--  Use JSON do parse messages from websocket , we use provided scope as the API is included in
             JBoss EAP -->
