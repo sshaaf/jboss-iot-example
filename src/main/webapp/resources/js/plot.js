@@ -60,7 +60,13 @@ window.onload = function() {
     var ctx = document.getElementById('canvas').getContext('2d');
     window.myLine = new Chart(ctx, config);
 };
-var socket = new WebSocket('ws://localhost:8080/mqtt-example/devicesocket');
+
+var loc = window.location
+var port = loc.port;
+var wsProtocol = window.location.protocol == "https:" ? "wss" : "ws";
+var wsurl = wsProtocol + "://" + loc.hostname + ':' + port + loc.pathname + 'devicesocket'
+console.log(wsurl)
+var socket = new WebSocket(wsurl);
 
 socket.onmessage
 socket.onopen = function(event) {

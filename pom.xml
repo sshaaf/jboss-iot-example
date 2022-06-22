@@ -6,7 +6,7 @@
     <modelVersion>4.0.0</modelVersion>
     <version>7.4.0.GA</version>
     <groupId>org.acme</groupId>
-    <artifactId>mqtt-example</artifactId>
+    <artifactId>iot-example</artifactId>
     <packaging>war</packaging>
     <parent>
         <groupId>org.jboss</groupId>
